@@ -2,536 +2,382 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title></title>
-    <style type="text/css" src="assets/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, nofollow">
+    <meta name="robots" content="noimageindex, noarchive">
+    <meta name="author" content="Idle Institute">
+    <meta name="copyright" content="© Idle Institute 2018">
+    <meta name="keywords" content="">
+    <meta name="description" content="The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac and Eliot Allison. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story...">
+    <link rel="canonical" href="" />
+    <title>Idle Institute's Sink Residency</title>
+    <style type="text/css">
 body {
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(200, 200, 200);
   margin: 0px;
   overflow: hidden;
 }
     </style>
     <script type="text/javascript" src="/assets/js/es6-promise.auto.min.js"></script>
     <script type="text/javascript" src="/assets/js/three.js"></script>
-    <script type="text/javascript" src="/assets/js/three/libs/stats.min.js"></script>
     <script type="text/javascript" src="/assets/js/three/Detector.js"></script>
     <script type="text/javascript" src="/assets/js/three/controls/OrbitControls.js"></script>
     <script type="text/javascript" src="/assets/js/three/loaders/GLTFLoader.js"></script>
     <script type="text/javascript" src="/assets/js/three/objects/Water.js"></script>
-    <script type="text/javascript" src="/assets/js/three/water/GPUComputationRenderer.js"></script>
-    <script type="text/javascript" src="/assets/js/three/water/SimplexNoise.js"></script>
+    <script type="text/javascript" src="/assets/js/three/pnoise.js"></script>
   </head>
   <body>
-    <script id="heightmapFragmentShader" type="x-shader/x-fragment">
-#include <common>
-
-uniform vec2 mousePos;
-uniform float mouseSize;
-uniform float viscosityConstant;
-
-#define deltaTime (1.0 / 60.0)
-#define GRAVITY_CONSTANT (resolution.x * deltaTime * 3.0)
-
-void main() {
-  vec2 cellSize = 1.0 / resolution.xy;
-
-  vec2 uv = gl_FragCoord.xy * cellSize;
-
-  // heightmapValue.x == height
-  // heightmapValue.y == velocity
-  // heightmapValue.z, heightmapValue.w not used
-  vec4 heightmapValue = texture2D( heightmap, uv );
-
-  // Get neighbours
-  vec4 north = texture2D( heightmap, uv + vec2( 0.0, cellSize.y ) );
-  vec4 south = texture2D( heightmap, uv + vec2( 0.0, - cellSize.y ) );
-  vec4 east = texture2D( heightmap, uv + vec2( cellSize.x, 0.0 ) );
-  vec4 west = texture2D( heightmap, uv + vec2( - cellSize.x, 0.0 ) );
-
-  float sump = north.x + south.x + east.x + west.x - 4.0 * heightmapValue.x;
-  float accel = sump * GRAVITY_CONSTANT;
-
-  // Dynamics
-  heightmapValue.y += accel;
-  heightmapValue.x += heightmapValue.y * deltaTime;
-
-  // Viscosity
-  heightmapValue.x += sump * viscosityConstant;
-
-  // Mouse influence
-  float mousePhase = clamp( length( ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( mousePos.x, - mousePos.y ) ) * PI / mouseSize, 0.0, PI );
-  heightmapValue.x += cos( mousePhase ) + 1.0;
-
-  gl_FragColor = heightmapValue;
-}
-    </script>
-    <script id="smoothFragmentShader" type="x-shader/x-fragment">
-uniform sampler2D texture;
-
-void main() {
-  vec2 cellSize = 1.0 / resolution.xy;
-  vec2 uv = gl_FragCoord.xy * cellSize;
-
-  // Computes the mean of texel and 4 neighbours
-  vec4 textureValue = texture2D( texture, uv );
-  textureValue += texture2D( texture, uv + vec2( 0.0, cellSize.y ) );
-  textureValue += texture2D( texture, uv + vec2( 0.0, - cellSize.y ) );
-  textureValue += texture2D( texture, uv + vec2( cellSize.x, 0.0 ) );
-  textureValue += texture2D( texture, uv + vec2( - cellSize.x, 0.0 ) );
-  textureValue /= 5.0;
-  gl_FragColor = textureValue;
-}
-    </script>
-    <script id="waterVertexShader" type="x-shader/x-vertex">
-uniform sampler2D heightmap;
-uniform mat4 textureMatrix;
-uniform float time;
-
-//#define PHONG
-
-varying vec4 mirrorCoord;
-varying vec4 worldPosition;
-varying vec3 vViewPosition;
-
-#ifndef FLAT_SHADED
-  varying vec3 vNormal;
-#endif
-
-#include <common>
-#include <uv_pars_vertex>
-#include <uv2_pars_vertex>
-#include <displacementmap_pars_vertex>
-#include <envmap_pars_vertex>
-#include <color_pars_vertex>
-#include <morphtarget_pars_vertex>
-#include <skinning_pars_vertex>
-#include <fog_pars_vertex>
-#include <shadowmap_pars_vertex>
-#include <logdepthbuf_pars_vertex>
-#include <clipping_planes_pars_vertex>
-
-void main() {
-  vec2 cellSize = vec2( 1.0 / WIDTH, 1.0 / WIDTH );
-
-  #include <uv_vertex>
-  #include <uv2_vertex>
-  #include <color_vertex>
-
-  // # include <beginnormal_vertex>
-  // Compute normal from heightmap
-  vec3 objectNormal = vec3(
-    ( texture2D( heightmap, uv + vec2( - cellSize.x, 0 ) ).x - texture2D( heightmap, uv + vec2( cellSize.x, 0 ) ).x ) * WIDTH / BOUNDS,
-    ( texture2D( heightmap, uv + vec2( 0, - cellSize.y ) ).x - texture2D( heightmap, uv + vec2( 0, cellSize.y ) ).x ) * WIDTH / BOUNDS,
-    1.0 );
-  //<beginnormal_vertex>
-
-  // morphnormal
-  #include <morphnormal_vertex>
-  // skinbase
-  #include <skinbase_vertex>
-  // skinnormal
-  #include <skinnormal_vertex>
-  // defaultnormal
-  #include <defaultnormal_vertex>
-
-#ifndef FLAT_SHADED // Normal computed with derivatives when FLAT_SHADED
-  vNormal = normalize( transformedNormal );
-#endif
-
-  //# include <begin_vertex>
-  float heightValue = texture2D( heightmap, uv ).x;
-  vec3 transformed = vec3( position.x, position.y, heightValue );
-  //<begin_vertex>
-
-  // morphtarget
-  #include <morphtarget_vertex>
-  // skinning
-  #include <skinning_vertex>
-  // displacementmap
-  #include <displacementmap_vertex>
-  // project
-  // #include <project_vertex>
-  //vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );
-  //gl_Position = projectionMatrix * mvPosition;
-
-  mirrorCoord = modelMatrix * vec4(transformed, 1.0);
-  worldPosition = mirrorCoord.xyzw;
-  mirrorCoord = textureMatrix * mirrorCoord;
-  vec4 mvPosition =  modelViewMatrix * vec4(transformed, 1.0);
-  gl_Position = projectionMatrix * mvPosition;
-
-  // logdepthbuf
-  #include <logdepthbuf_vertex>
-  // clipping_planes
-  #include <clipping_planes_vertex>
-
-  vViewPosition = - mvPosition.xyz;
-
-  // worldpos
-  #include <worldpos_vertex>
-  // envmap
-  #include <envmap_vertex>
-  // fog
-  #include <fog_vertex>
-  // shadowmap
-  #include <shadowmap_vertex>
-}
-    </script>
     <script type="text/javascript">
 if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 var container;
-var scene, subscene = null;
-var camera, controls, renderer, light, stats;
-var intersected, mouse, raycaster;
-var water;
+var scene, subscene = { object: null, name: 'objects' };
+var camera, controls, renderer, light;
+var intersected, current, previous, mouse, mouseMoved = false, raycaster;
+var water = {
+  geometry: { object: null, bounds: 18, resolution: 32 },
+  rotation: { x: Math.PI / -2.0, y: Math.PI / 4 },
+  position: { y: -0.15 },
+  distortion: 10.0,
+  colors: { water: 0x5f707f, sun: 0xedefa0, alpha: 0.98 },
+  object: null
+};
 
-var importedSceneName = 'Objects';
+var objects = {
+  loader: null,
+  scalingFactor: 10,
+  material: null,
+  emissiveColor: 0xb87333,
+  positions: [
+    {x:  0.1, y: 0.0, z:  0.15},  // name: bobcat; idx: 0;
+    {x: 0.45, y: 0.0, z:  0.6},   // name: skull;  idx: 1;
+    {x: -0.6, y: 0.0, z: -0.3},   // name: maus;   idx: 2;
+    {x:  0.4, y: 0.0, z: -0.6},   // name: beetle; idx: 3;
+    {x: -0.4, y: 0.1, z:  0.5}    // name: rat;    idx: 4;
+  ],
+  links: {
+    "bobcat": '/bobcat/',
+    "skull": '/skull/',
+    "maus": '/maus/',
+    "beetle": '/beetle/',
+    "rat": '/rat/'
+  },
+  materials: {
+    "bobcat": null, "skull": null, "maus": null, "beetle": null, "rat": null
+  }
+}
 
-var gpuCompute;
-var wMesh, wMeshRay, wUniforms;
-var hMapVar, smoothShader;
-
-var wWidth = 32;
-var wNumTexels = wWidth * wWidth;
-var wBounds = 128;
-var wHalfBounds = wBounds / 2;
-var wMouseMoved = false;
-var wWaveHeight = 0.1;
-
-var simplex = new SimplexNoise();
+var skybox = {
+  loader: new THREE.CubeTextureLoader(manager),
+  texture: null, shader: null, material: null, object: null,
+  scale: objects.scalingFactor * 10,
+  addToScene: true
+};
 
 var manager = new THREE.LoadingManager();
 manager.onProgress = function (item, loaded, total) {
-  console.log("LoadingManager: " + (loaded / total * 100).toFixed(0) + '% loaded');
+  console.debug("LoadingManager: " + (loaded / total * 100).toFixed(1) + '% loaded');
 };
 manager.onLoad = function () {
-  console.log("LoadingManager: 100% loaded, starting animate()");
+  console.debug("LoadingManager: 100% loaded, starting animate()");
   // scene is ready, can access subscenes
   for (var i = 0; i < scene.children.length; ++i) {
-    if (scene.children[i].name == importedSceneName) {
-      subscene = scene.children[i];
+    if (scene.children[i].name == subscene.name) {
+      subscene.object = scene.children[i];
     }
   }
 
-  if (subscene == null) {
+  if (subscene.object == null) {
     console.error("subscene == null");
+    var el = document.createElement('div');
+    el.innerHTML = 'Error! Subscene with objects was not found!'
+    document.body.appendChild(el);
+  } else {
+    animate();
   }
-
-  animate();
 }
 
 init();
 
-function wInit() {
-  var color = 0x00b386;
-  var specular = 0x111111;
-  var geometry = new THREE.PlaneBufferGeometry(wBounds, wBounds, wWidth-1, wWidth-1);
-
-  var material = new THREE.ShaderMaterial({
-    uniforms: THREE.UniformsUtils.merge([
-      // water.material.uniforms,
-      THREE.ShaderLib[ 'phong' ].uniforms,
-      {
-        heightmap: {
-          value: null
-        }
-      }
-    ]),
-    vertexShader: document.getElementById('waterVertexShader').textContent,
-    // fragmentShader: water.material.fragmentShader
-    fragmentShader: THREE.ShaderChunk['meshphong_frag']
-  });
-  // material.lights = true;
-  // material.transparent = true;
-  // material.side = water.material.side;
-  // material.fog = water.material.fog;
-  material.lights = true;
-  material.color = new THREE.Color(color);
-  material.specular = new THREE.Color(specular);
-  material.shininess = 50;
-  material.transparent = true;
-  material.opacity = 0.6;
-
-  // Sets the uniforms with the material values
-  material.uniforms.diffuse.value = material.color;
-  material.uniforms.specular.value = material.specular;
-  material.uniforms.shininess.value = Math.max(material.shininess, 1e-4);
-  material.uniforms.opacity.value = material.opacity;
-
-  water.material.uniforms = THREE.UniformsUtils.merge(
-    [water.material.uniforms, {heightmap: { value: null }}]);
-  water.material.vertexShader = document.getElementById('waterVertexShader').textContent;
-
-  // Defines
-  material.defines.WIDTH = wWidth.toFixed(1);
-  material.defines.BOUNDS = wBounds.toFixed(1);
-  water.material.defines.WIDTH = wWidth.toFixed(1);
-  water.material.defines.BOUNDS = wBounds.toFixed(1);
-
-  scene.add(water);
-
-  wUniforms = material.uniforms;
-  wMesh = new THREE.Mesh(geometry, material);
-  wMesh.rotation.x = Math.PI / -2;
-  wMesh.position.y = -20;
-  wMesh.matrixAutoUpdate = false;
-  wMesh.updateMatrix();
-  // scene.add(wMesh);
-
-  var geometryRay = new THREE.PlaneBufferGeometry(wBounds, wBounds, 1, 1);
-  wMeshRay = new THREE.Mesh(geometryRay, new THREE.MeshBasicMaterial({
-    color: 0xFFFFFF,
-    visible: false
-  }));
-  wMeshRay.rotation.x = Math.PI / -2;
-  wMeshRay.matrixAutoUpdate = false;
-  wMeshRay.updateMatrix();
-  scene.add(wMeshRay);
-
-  gpuCompute = new GPUComputationRenderer(wWidth, wWidth, renderer);
-  var wHeightmap = gpuCompute.createTexture();
-  fillTexture(wHeightmap);
-
-  hMapVar = gpuCompute.addVariable("heightmap",
-    document.getElementById('heightmapFragmentShader').textContent, wHeightmap);
-  gpuCompute.setVariableDependencies(hMapVar, [hMapVar]);
-
-  hMapVar.material.uniforms.mousePos = {
-    value: new THREE.Vector2(100, 100)
-  };
-  hMapVar.material.uniforms.mouseSize = {
-    value: 20
-  };
-  hMapVar.material.uniforms.viscosityConstant = {
-    value: 0.05
-  };
-  hMapVar.material.defines.BOUNDS = wBounds.toFixed(1);
-
-  var err = gpuCompute.init();
-  if (err != null) {
-    console.error(err);
-  }
-
-  smoothShader = gpuCompute.createShaderMaterial(
-    document.getElementById('smoothFragmentShader').textContent,
-    { texture: { value: null } });
-}
-
-function fillTexture(texture) {
-  function noise(x, y, z) {
-    var multR = wWaveHeight;
-    var mult = 0.025;
-    var r = 0;
-
-    for (var i = 0; i < 15; ++i) {
-      r += multR * simplex.noise( x * mult, y * mult );
-      multR *= 0.53 + 0.025 * i;
-      mult *= 1.25;
-    }
-
-    return r;
-  }
-
-  var pixels = texture.image.data;
-
-  var p = 0;
-  for (var j = 0; j < wWidth; ++j) {
-    for (var i = 0; i < wWidth; ++i) {
-      var x = i * 128 / wWidth;
-      var y = j * 128 / wWidth;
-
-      pixels[p + 0] = noise(x, y, 0.0);
-      pixels[p + 1] = 0;
-      pixels[p + 2] = 0;
-      pixels[p + 3] = 1;
-
-      p += 4;
-    }
-  }
-}
-
-function smoothWater() {
-  var currentRenderTarget = gpuCompute.getCurrentRenderTarget(hMapVar);
-  var alternateRenderTarget = gpuCompute.getAlternateRenderTarget(hMapVar);
-
-  for (var i = 0; i < 10; ++i) {
-    smoothShader.uniforms.texture.value = currentRenderTarget.texture;
-    gpuCompute.doRenderTarget(smoothShader, alternateRenderTarget);
-
-    smoothShader.uniforms.texture.value = alternateRenderTarget.texture;
-    gpuCompute.doRenderTarget(smoothShader, currentRenderTarget);
-  }
-}
-
 function init() {
 
+  // --------------------------------------------------------------------------
   // add scene
   scene = new THREE.Scene(manager);
-  // scene.fog = THREE.FogExp2(0x111111, 0.002);
 
   // add renderer
   renderer = new THREE.WebGLRenderer({
     alpha: true,
     autoSize: true,
-    antialias: true,
-    gammaOutput: false
+    antialias: false,
+    gammaOutput: true
   });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // create parent container for the canvas
   container = document.createElement('div');
+  container.setAttribute('id', 'render');
   document.body.appendChild(container);
   container.appendChild(renderer.domElement);
 
   // add camera
   camera = new THREE.PerspectiveCamera(
-    20, window.innerWidth / window.innerHeight, 0.001, 1000);
-  camera.position.set(400, 200, 0);
+    30, window.innerWidth / window.innerHeight, 0.001, 1000);
+  camera.position.set(
+    objects.scalingFactor * 4,
+    objects.scalingFactor * 0.9,
+    objects.scalingFactor * 0
+  );
 
+  // --------------------------------------------------------------------------
   // add controls and auto-rotate
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.enablePan = false;
-  controls.dampingFactor = 0.25;
-  controls.minDistance = 100;
-  controls.maxDistance = 1000;
-  controls.maxPolarAngle = 0.5 * Math.PI;
+  controls.enablePan = true;
+  controls.dampingFactor = 0.9;
+  controls.minDistance = objects.scalingFactor * 2.0;
+  controls.maxDistance = objects.scalingFactor * 6.9;
+  // controls.maxPolarAngle = 0.45 * Math.PI;
   controls.target.set(0, 0, 0);
-  controls.autoRotate = false;
-  controls.autoRotateSpeed = 0.5;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = -0.2;
   controls.update();
 
-  // load env texture
-  var textureLoader = new THREE.CubeTextureLoader(manager);
-  textureLoader.setPath('/assets/textures/skybox/');
+  // --------------------------------------------------------------------------
+  // add lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
 
-  var skybox = textureLoader.load([
-    'px.jpg', 'nx.jpg',
-    'py.jpg', 'ny.jpg',
-    'pz.jpg', 'nz.jpg',
+  light = new THREE.DirectionalLight(0xffffff, 2);
+  light.position.set(objects.scalingFactor * 20,
+                     objects.scalingFactor * 10,
+                     objects.scalingFactor * 20);
+  scene.add(light);
+
+  // --------------------------------------------------------------------------
+  // load skybox texture
+  skybox.loader.setPath('/assets/textures/blur-transparent-color/');
+  skybox.texture = skybox.loader.load([
+    'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png',
   ]);
+  skybox.texture.format = THREE.RGBAFormat;
 
-  var skyboxShader = THREE.ShaderLib['cube'];
-  skyboxShader.uniforms['tCube'].value = skybox;
-  var skyboxMaterial = new THREE.ShaderMaterial({
-    fragmentShader: skyboxShader.fragmentShader,
-    vertexShader: skyboxShader.vertexShader,
-    uniforms: skyboxShader.uniforms,
+  skybox.refractive = skybox.texture.clone();
+  skybox.refractive.mapping = THREE.CubeRefractionMapping;
+  skybox.refractive.format = THREE.RGBAFormat;
+
+  skybox.shader = THREE.ShaderLib['cube'];
+  skybox.shader.uniforms['tCube'].value = skybox.texture;
+  skybox.material = new THREE.ShaderMaterial({
+    fragmentShader: skybox.shader.fragmentShader,
+    vertexShader: skybox.shader.vertexShader,
+    uniforms: skybox.shader.uniforms,
+    opacity: 0.5,
+    transparent: true,
     side: THREE.BackSide
   });
-  var skyboxMesh = new THREE.Mesh(new THREE.BoxBufferGeometry(1000,1000,1000),
-    skyboxMaterial);
-  scene.add(skyboxMesh);
 
+  skybox.object = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(skybox.scale, skybox.scale, skybox.scale),
+    skybox.material);
+  skybox.object.position.y = 0;
+  skybox.object.rotation.y = Math.PI / 2;
+  skybox.object.name = 'skybox';
+
+  // add the skybox to the scene
+  if (skybox.addToScene) {
+    scene.add(skybox.object);
+    // scene.background = skybox.texture;
+  }
+
+  // --------------------------------------------------------------------------
   // materials
-  var material = new THREE.MeshStandardMaterial({
-    color: 0xb87333,
-    roughness: 0.60,
-    metalness: 0.80,
-    wireframe: true,
-    emissiveIntensity: 0.2
-  });
 
-  // name: bobcat; idx: 0;
-  // name: skull;  idx: 1;
-  // name: maus;   idx: 2;
-  // name: beetle; idx: 3;
-  // name: rat;    idx: 4;
+  var coal = new THREE.TextureLoader(manager).load('/assets/images/coal.jpg');
+  coal.wrapS = THREE.RepeatWrapping;
+  coal.wrapT = THREE.RepeatWrapping;
 
-  var positions = [
-    {x: -0.2, z:  0.15},
-    {x:  0.5, z:  0.8},
-    {x: -0.6, z: -0.3},
-    {x:  0.4, z: -0.8},
-    {x: -0.7, z:  0.5}
-  ];
+  var skin = new THREE.TextureLoader(manager).load('/assets/images/skin.png');
+  skin.wrapS = THREE.RepeatWrapping;
+  skin.wrapT = THREE.RepeatWrapping;
 
-  // load meshes
-  var gltfLoader = new THREE.GLTFLoader(manager);
-  gltfLoader.load('/assets/models/mesh/all.glb',
-    onLoad = function (glb) {
+  var natural = new THREE.TextureLoader(manager).load('/assets/images/natural.png');
+  natural.wrapS = THREE.RepeatWrapping;
+  natural.wrapT = THREE.RepeatWrapping;
+
+  var malachite = new THREE.TextureLoader(manager).load('/assets/images/malachite.jpg');
+  malachite.wrapS = THREE.RepeatWrapping;
+  malachite.wrapT = THREE.RepeatWrapping;
+
+  objects.materials = {
+    "bobcat": new THREE.MeshPhongMaterial({
+      // color: 0x91a01b,
+      color: 0xe2240f,
+      combine: THREE.MixOperation,
+      reflectivity: 0.5,
+      transparent: true,
+      opacity: 0.8,
+      emissiveIntensity: 0.5,
+      map: skin,
+      envMap: skybox.texture
+    }),
+    "skull": new THREE.MeshStandardMaterial({
+      color: 0xb87333,
+      roughness: 0.70,
+      metalness: 0.80,
+      wireframe: true,
+      emissiveIntensity: 0.4,
+      envMap: skybox.texture
+    }),
+    "maus": new THREE.MeshLambertMaterial({
+      color: 0x3ec4a2,
+      emissiveIntensity: 0.5,
+      reflectivity: 0.3,
+      map: malachite,
+      envMap: skybox.texture
+    }),
+    "beetle": new THREE.MeshStandardMaterial({
+      color: 0xaaaaaa,
+      // reflectivity: 0.8,
+      metalness: 0.3,
+      roughness: 0.9,
+      emissiveIntensity: 0.5,
+      map: coal,
+      envMap: skybox.texture
+    }),
+    "rat": new THREE.MeshStandardMaterial({
+      color: 0x99eeff,
+      metalness: 0.8,
+      roughness: 0.2,
+      // reflectivity: 0.8,
+      emissiveIntensity: 0.5,
+      envMap: skybox.texture
+    })
+  };
+
+  // --------------------------------------------------------------------------
+  // load the meshes
+  objects.loader = new THREE.GLTFLoader(manager);
+  objects.loader.load('/assets/models/objects-meshes.glb',
+    onLoad = function (asset) {
       var idx = 0;
-      glb.scene.traverse(function (child) {
+      asset.scene.traverse(function (child) {
         if (child.isMesh) {
-          console.log("name: " + child.name + "; idx: " + idx + ";");
-          child.material = new THREE.MeshStandardMaterial(material);
-          child.scale.set(100, 100, 100);
+          console.debug("GLTFLoader: name: " + child.name + "; idx: " + idx + ";");
+
+          // copy the base material
+          child.material = objects.materials[child.name];
+          // scale up the models
+          child.scale.set(objects.scalingFactor, objects.scalingFactor, objects.scalingFactor);
           child.rotation.y = 1.25 * Math.PI;
-          child.position.x = 100 * (positions[idx].x + 0.1 * Math.random());
-          child.position.z = 100 * (positions[idx].z + 0.1 * Math.random());
+          child.position.x = objects.scalingFactor *
+            (objects.positions[idx].x + 0.1 * Math.random());
+          child.position.y = objects.scalingFactor *
+            (objects.positions[idx].y + 0.1 * Math.random());
+          child.position.z = objects.scalingFactor *
+            (objects.positions[idx].z + 0.1 * Math.random());
           ++idx;
         }
-      }); // glb.scene.traverse
+      }); // asset.scene.traverse
 
-      glb.scene.name = importedSceneName;
-      scene.add(glb.scene);},
+      asset.scene.name = subscene.name;
+      scene.add(asset.scene);},
     onError = function (e) { console.error(e); }
   );
 
-  // add lights
-  scene.add(new THREE.AmbientLight(0xAAAAAA));
+  // --------------------------------------------------------------------------
+  // add the water
+  water.geometry.object = new THREE.PlaneBufferGeometry(
+    water.geometry.bounds, water.geometry.bounds,
+    water.geometry.resolution - 1, water.geometry.resolution - 1);
 
-  // light = new THREE.HemisphereLight(0x444444, 0xA55330);
-  // light = new THREE.PointLight(0xA55330, 1, 100);
-  light = new THREE.DirectionalLight(0xFFFFFF, 1);
-  light.position.set(200, 100, 200);
-  scene.add(light);
-
-  var waterGeometry = new THREE.PlaneBufferGeometry(wBounds, wBounds, wWidth-1, wWidth-1);
-
-  water = new THREE.Water(waterGeometry, {
+  water.object = new THREE.Water(water.geometry.object, {
     textureWidth: 512,
     waterNormals: new THREE.TextureLoader(manager).load(
       "/assets/js/three/textures/water_normal.jpg", function (texture) {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     }),
-    alpha: 0.7,
+    alpha: water.colors.alpha,
     sunDirection: light.position.clone().normalize(),
-    sunColor: 0xffffff,
-    waterColor: 0x00b386,
-    distortionScale: 3.0
+    sunColor: water.colors.sun,
+    waterColor: water.colors.water,
+    distortionScale: water.distortion
   });
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = -0.15;
-  // scene.add(water);
+  water.object.material.side = THREE.DoubleSide;
+  water.object.material.vertexShader = [
+      pnoise,
 
-  wInit();
+      'uniform mat4 textureMatrix;',
+      'uniform float time;',
 
+      'varying vec4 mirrorCoord;',
+      'varying vec4 worldPosition;',
+      'varying float noise;',
+
+      'float turbulence(vec3 p) {',
+      '  float w = 100.0;',
+      '  float t = -.5;',
+      '  for (float f = 1.0 ; f <= 10.0 ; ++f){',
+      '    float power = pow(2.0, f);',
+      '    t += abs(pnoise(vec3(power * p), vec3(10.0, 10.0, 10.0)) / power);',
+      '  }',
+      '  return t;',
+      '}',
+
+      THREE.ShaderChunk[ 'fog_pars_vertex' ],
+      THREE.ShaderChunk[ 'shadowmap_pars_vertex' ],
+
+      'void main() {',
+      '  float displacement = 1.2 * pnoise(0.25 * position + vec3(1.6 * time), vec3(80.0));',
+      '  mirrorCoord = modelMatrix * vec4(position, 1.0);',
+      '  worldPosition = mirrorCoord.xyzw;',
+      '  mirrorCoord = textureMatrix * mirrorCoord;',
+      '  vec3 newPosition = position + vec3(0., 0.2, 1.) * (displacement);',
+      '  vec4 mvPosition =  modelViewMatrix * vec4(newPosition, 1.0);',
+      '  gl_Position = projectionMatrix * mvPosition;',
+
+      THREE.ShaderChunk[ 'fog_vertex' ],
+      THREE.ShaderChunk[ 'shadowmap_vertex' ],
+
+      '}'
+    ].join('\n'),
+
+  water.object.rotation.z = water.rotation.y;
+  water.object.rotation.x = water.rotation.x;
+  water.object.position.y = objects.scalingFactor * water.position.y;
+  water.object.name = 'water';
+  scene.add(water.object);
+
+  // --------------------------------------------------------------------------
+  // add the raycaster
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
   mouse.x = -1;
   mouse.y = -1;
 
+  // --------------------------------------------------------------------------
+  // add event listeners
+  document.addEventListener('mousedown', onDocumentMouseDown, false);
   document.addEventListener('mousemove', onDocumentMouseMove, false);
+  document.addEventListener('touchstart', onDocumentTouchStart, false);
   window.addEventListener('resize', onWindowResize, false);
-
-  // stats = new Stats();
-  // document.body.appendChild(stats.dom);
 }
 
 function animate() {
   requestAnimationFrame(animate);
-  // controls.update();
+  controls.update();
   camera.lookAt(scene.position);
   camera.updateMatrixWorld();
 
-  // update the picking ray with the camera and mouse position
-  // raycaster.setFromCamera(mouse, camera);
+  water.object.material.uniforms.time.value += 0.1 / 60.0;
 
-  water.material.uniforms.time.value += 0.1 / 60.0;
-
-  for (var idx in subscene.children) {
-    subscene.children[idx].rotation.y += 0.7e-03 * Math.PI;
+  for (var idx in subscene.object.children) {
+    subscene.object.children[idx].rotation.y += 0.5e-03 * Math.PI;
   }
 
-  var intersect = mousePointerIntersection();
-  wInteraction();
-  // var intersect = mousePointerIntersection();
-  // if (intersect != null) console.log(intersect);
+  mousePointerIntersection();
 
   renderer.render(scene, camera);
-  // stats.update();
 }
 
 // window resize callback
@@ -544,8 +390,14 @@ function onWindowResize() {
 function setMouseCoordinates(x, y) {
   mouse.x = (x / window.innerWidth ) * 2 - 1;
   mouse.y = - (y / window.innerHeight ) * 2 + 1;
-  wMouseMoved = true;
-  // console.debug(mouse);
+  mouseMoved = true;
+}
+
+function processClicks() {
+  if (intersected) {
+    console.debug("Redirecting to: " + objects.links[intersected.name]);
+    window.open(objects.links[intersected.name], '_self');
+  }
 }
 
 // mouse move callback
@@ -554,49 +406,63 @@ function onDocumentMouseMove(event) {
   setMouseCoordinates(event.clientX, event.clientY);
 }
 
-function wInteraction() {
-  var uniforms = hMapVar.material.uniforms;
+function onDocumentTouchStart(event) {
+  if (event.touches.length === 1) {
+    event.preventDefault();
+    setMouseCoordinates(event.touches[0].pageX, event.touches[0].pageY);
 
-  if (wMouseMoved) {
-    raycaster.setFromCamera(mouse, camera);
+    mousePointerIntersection();
 
-    var intersects = raycaster.intersectObject(wMeshRay);
+    if (intersected) {
+      if (!current) {
+        console.debug("onDocumentTouchStart: !current");
+        current = intersected;
+        previous = current;
+      } else {
+        current = intersected;
 
-    if ( intersects.length > 0 ) {
-        var point = intersects[0].point;
-        uniforms.mousePos.value.set(point.x, point.z);
+        if (intersected === previous) {
+          console.debug("onDocumentTouchStart: intersected === previous");
+          processClicks();
+        } else {
+          console.debug("onDocumentTouchStart: intersected != previous");
+        }
+
+        previous = current;
+      }
     } else {
-        uniforms.mousePos.value.set(100, 100);
+      current = null;
+      previous = null;
+
+      console.debug("onDocumentTouchStart: !intersected");
     }
-
-    wMouseMoved = false;
   }
-  else {
-    uniforms.mousePos.value.set(100, 100);
-  }
-
-  gpuCompute.compute();
-  wUniforms.heightmap.value = gpuCompute.getCurrentRenderTarget(hMapVar).texture;
 }
 
+function onDocumentMouseDown(event) {
+  event.preventDefault();
+
+  if (!event.touches) {
+    setMouseCoordinates(event.clientX, event.clientY);
+  }
+
+  processClicks();
+}
+
+
 function mousePointerIntersection() {
-  if (!wMouseMoved) {
+  if (!mouseMoved) {
     return null;
   }
 
   raycaster.setFromCamera(mouse, camera);
 
   // calculate objects intersecting the picking ray
-  var intersects = raycaster.intersectObjects(subscene.children, true);
-  for (var i in intersects) {
-    console.log(intersects[i].object.name);
-  }
+  var intersects = raycaster.intersectObjects(subscene.object.children, true);
 
   // if at least one object intersects with the ray, highlight it by
   // setting the emissive properties of its material.
   if (intersects.length > 0) {
-    console.log(intersects[0]);
-
     if (intersected != intersects[0].object) {
       if (intersected) {
         intersected.material.emissive.setHex(intersected.currentHex);
@@ -604,7 +470,7 @@ function mousePointerIntersection() {
 
       intersected = intersects[0].object;
       intersected.currentHex = intersected.material.emissive.getHex();
-      intersected.material.emissive.setHex(0xb87333);
+      intersected.material.emissive.setHex(objects.emissiveColor);
     }
   } else {
     if (intersected) {
@@ -613,8 +479,6 @@ function mousePointerIntersection() {
 
     intersected = null;
   }
-
-  return intersected;
 }
     </script>
   </body>
