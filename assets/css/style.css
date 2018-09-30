@@ -2,17 +2,13 @@ body {
   overflow: scroll;
   min-height: calc(100% - 44px);
   font-family: Times, serif;
-/*  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";*/
   line-height: 1.5em;
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-@media (max-width: 480px) { body { font-size: 14px !important; } }
-@media (min-width: 480px) and (max-width: 768px) { body { font-size: 16px !important; } }
-@media (min-width: 768px) { body { font-size: 18px !important; } }
+@media (max-width: 480px) { body { font-size: 11pt !important; } }
+@media (min-width: 480px) and (max-width: 768px) { body { font-size: 12pt !important; } }
+@media (min-width: 768px) { body { font-size: 14pt !important; } }
 
 p {
   font-size: 1em;
@@ -20,8 +16,26 @@ p {
   margin-bottom: 0em;
 }
 
+button {
+  background: none !important;
+  border: none !important;
+  /*padding: 0 !important;*/
+  font-family: Times, serif;
+  color: rgba(0, 0, 0, 0.2);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+button:hover {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+p.author a:hover {
+  color: rgba(0, 0, 0, 0.4);
+}
+
 p.author {
-  text-align: center;
+  /*text-align: center;*/
   color: rgba(0, 0, 0, 0.2);
   padding: 0em;
   margin: 0em;
@@ -65,7 +79,7 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 2em;
+  margin-top: 45vh;
   margin-bottom: 2em;
   counter-reset: cnt;
 }
@@ -86,10 +100,11 @@ h2:before {
 
 .cols {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1em;
-  margin-bottom: 1em;
+  align-items: flex-end;
+  justify-content: space-between;
+  /*margin-top: 1em;*/
+  /*margin-bottom: 1em;*/
+  padding: 0.2em;
 }
 
 .col {
@@ -171,6 +186,7 @@ hr.onomato:after {
   width: 100%;
   height: 100%;
   z-index: 1;
+  opacity: 0.8;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0);
   pointer-events: none;

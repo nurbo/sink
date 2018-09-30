@@ -8,9 +8,9 @@
     <meta name="author" content="Idle Institute">
     <meta name="copyright" content="© Idle Institute 2018">
     <meta name="keywords" content="">
-    <meta name="description" content="The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac and Eliot Allison. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story...">
+    <meta name="description" content="The Idle Institute's Sink Residency | The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac, Eliot Allison and Bruno Klopott. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story...">
     <link rel="canonical" href="" />
-    <title>... | Idle Institute's Sink Residency</title>
+    <title>Every Hard Light has a Silver Lining | Idle Institute's Sink Residency</title>
     <link rel="stylesheet" href="/assets/css/normalize.css">
     <link rel="stylesheet" href="/assets/css/style.css">
     <script type="text/javascript" src="/assets/js/es6-promise.auto.min.js"></script>
@@ -18,21 +18,55 @@
     <script type="text/javascript" src="/assets/js/three/Detector.js"></script>
     <script type="text/javascript" src="/assets/js/three/controls/OrbitControls.js"></script>
     <script type="text/javascript" src="/assets/js/three/loaders/GLTFLoader.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/GLTFExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/OBJExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/STLExporter.js"></script>
   </head>
   <body>
     <main>
       <article>
         <header>
           <div id="back"><a href="/">←</a></div>
-          <h1>...</h1>
+          <h1>Every Hard Light has a Silver Lining</h1>
           <div class="cols">
             <div class="col"><p class="author"><a href="/">← Go back</a></p></div>
-            <div class="col"><p class="author">|</p></div>
             <div class="col"><p class="author"><a href="/">Idle Institute</a></p></div>
+            <div class="col"><p class="author"><a href="sink.sexy">Sink</a></p></div>
           </div>
-          <hr>
+          <div id="downloads" class="cols">
+            <div class="col">
+              <p class="author">Download the model:</p>
+            </div>
+            <div class="col">
+              <p class="author" style="text-align: right;">
+                <button id="save-gltf">glTF&trade;</button>
+                <button id="save-obj">OBJ</button>
+                <button id="save-stl">STL</button>
+                <label>Binary? <input id="option-binary" name="binary" type="checkbox"/></label>
+              </p>
+            </div>
+          </div>
         </header>
-        <p><i>Check back later!</i></p>
+        <hr>
+        <p>The corridors seemed to be disappearing. Instead, the sudden turns and corners proliferated interminably before the Hard Light closed them. Somebody must have been there when it happened as there were piles of abandoned Substance. Every Hard Light has a silver lining… The matter had dried out slightly but I managed to knead and roll some of it together. Misfortune is the gain of a crafty man, they say. And so from this pile came one and then another - ‘one less to worry about’ I’d say.</p>
+        <p>There is always a lot of Substance in my apartment. Everything is neatly and evenly rolled. Sometimes I stop for a moment, rub my hands and admire how things are organised, moisturised and clean. The Substance lies quietly in the compartments and shines beautifully. The partitions at my place are strong, even and smooth. And always, presciently, a couple of empty partitions, ready for new rollunds.</p>
+        <p>We had been told that the world is composed of infinite entangled corridors that lead to different places each time you take them. But better to know each way than to go astray, so I counted them. There were one hundred forty and eight corridors before. Each one fifteen turns long. Now, there are one hundred thirty and nine, and eighteen turns. Turns are bad of course: they have sharp edges that prevent smooth Substance rolling and you never know what's behind them. If there are a lot of turns, one doesn’t want to walk, but after all, one has to, everyone knows that, even the others.</p>
+        <p>I've collected so much that I don’t need go for walks that often. But there’s less and less Substance in the tunnels, and the neighbours are getting louder, so I get that impulse to go. To be honest, I like tunnelling—that is when the tunnel isn’t broken! I like good corridors - damp and empty, in straight and single lines. But there are the broken corridors that keep splitting, they entangle and contract as if in cramp. Here the Substance gets hooked, unfolds, so you desperately try to save it, glue it together and mould it. But of course, as always happens in difficult moments, a horde of others appear from around the corner to profit on your misfortune. So then you’re on your back, your limbs in the air, waggling helplessly in humiliation. No sign of Substance! Looking for the guilty ones in vain! When it’s quiet you can curl up in your apartment and hear somewhere behind the walls all the yelling, croaking, thrashing, celebrating the harm that has come to you. But from where exactly? I don’t know, but I have my suspicions.</p>
+        <p>As the Hard Light started growing at the end of the long tunnel, a bunch of the others rushed there immediately, as they had run out of Substance. None have returned but the others probably won’t even notice and might even be glad, because that means more Substance for the remaining ones. Anyway, who knows what others think. It’s better not to try to think like them, because thinking like others makes you feel bad inside. There are other things that make you feel good inside, such as looking at precisely arranged Substance in moist rollunds, careful rolling in straight tunnels, cross-sections of things, and silence in corridors. Other things that make you feel bad inside are: noises, crowded tunnels, sudden turns, dirty apartments, and of course, the Hard Light—but we don’t know that exactly, because nobody who could tell us about that exists.</p>
+        <p>I have been here for a long time. The neighbours have changed many times. I have already stopped distinguishing between them. I only know that some of them are wise and others are stupid. The wise ones live alone or in pairs, they always come out quietly and seal the entrance carefully so nobody can break in. I know because I tried… all boarded up. The fools nest in clusters and keep screaming out of joy when they have the Substance, and out of misery when they don’t. While tunnelling, they knead with the whole herd, leaving the entrance to their apartments unattended and unprotected. So how can you not have a look around? Even though all that chaos and dirt makes me feel sick inside.</p>
+        <p>When you are tunnelling, you should always turn left. It has always been like that and there is no need to change it. So I don’t. I have always wondered if others also only turn left. Perhaps not, considering not everyone comes back. But where had they been going? It’s not confirmed. Who, anyway, would ask about that rabble who cannot count their own legs, not mentioning the relatives? </p>
+        <p><hr class="star"></p>
+        <p>Someone new moved in at the apartment at the end of the corridor. As I did with every newcomer, I wondered if they sealed the doors when they left.</p>
+        <p>They had, but not precisely. You could still go in. It was clean and neat inside. Not too much Substance, but arranged properly in tasteful patterns. The walls were clean. When you looked around, it was getting good inside. I sat there a little bit.</p>
+        <p>She came back with the Substance, passing as I was concealing my door. I glanced uncertainly and noticed that she rolled just the way I did - from the bottom up, then sweeping up front the sides. She also had remembered to wet her roll every now and then, because her ball glowed nicely on top. We rolled almost identically, perhaps because her pale legs were a similar length. To my surprise her eyes were as big as mine, the same hue of muddy green. Her back was covered in rusty bristle ruffled bellicosely. But she moved differently - a bit too fast, and she didn’t always check what was in front of her and the roll. She passed me, cautiously hissing and spitting, only to come back later throwing stones and nasty insults. I took it as a sign of forethought and precaution, as only a fool would trust anybody these days. </p>
+        <p>When I healed the wounds from her nasty bites, I decided to pay her a visit. I think she was waiting for me as she didn’t beat me up as hard as the last time. Fresh Substance on the table divided into little lumps shone irresistibly. When I touched her, it made me feel good inside.</p>
+        <p>We started tunnelling together. We carefully kneaded up the doors we snuck through. We paced the corridors side by side, but she always tried to go faster and didn’t always check. Better safe than squished, I thought. I always check, so it's slower. That's what you have to do. And always turn left.</p>
+        <p>It was good to walk together. The passageways seemed less dry and twisted. And there was always one abundant tunnel, where the Substance shined with moisture. We were rolling side by side, but obviously, the rollunds were separate. Her Substance increased significantly those days, but I also gained a lot. We had so much that I had to put up some new compartments.</p>
+        <p>I often sat down and looked complacently how everything was where it should be. I found myself looking at her Substance with pleasure, even though it wasn’t mine. I imagined how I could improve her divisions and modify the arrangements. I would invent a new segregation system every day. I also liked watching her, mostly because she was a lot like me. Two large tooth pincers, pale thin legs covered in ginger bristle, and long fingers spinned for rolling and digging. Looking at her made me feel good inside. I do not know if it made her feel good too. I didn’t ask.</p>
+        <p>That corridor… a right corridor, appeared unexpectedly. As always, I turned my head and moved calmly to the left. I don’t know what lured her there. It looked corrupted from the first glance! She moved without hesitation to the right, quickly, almost without checking. She disappeared behind a corner in a second, leaving her rollund behind. Who does that?</p>
+        <p>I was worried and listened, quick steps and shuffles were quieter and farther. In the end, they got mixed up with the countless echoes of the Corridors. I thought I could hear something slammed and crunched, but I could have imagined it. It made me feel bad inside. At one point, I even wanted to follow her. I even put my freshly kneaded ball aside and took a step towards the broken Corridor, but I hesitated… If I had done that, someone could have come and despoil us both of Substance. Mine and hers! Double-steal it. In fact, already almost both mine. Besides, it was her own fault. Who wise and decent turns right? She fooled me. Neither normal nor crafty. Just like the others, who are everywhere and then disappear without a word! I carefully pressed two balls into a bigger one, squeezed and moulded carefully and walked back. I gently placed the comely ball in a new partition.</p>
+        <p>What happened to her? Not quite sure. Perhaps, it was a fake tunnel and the Hard Light got her. I struggled a bit with her door as I taught her my concealment techniques. I rolled all her Substance to my apartment. I had to build two rows of new compartments to fit it all in but it didn’t make me feel so good inside.</p>
+        <p>Now it’s quiet and stable again. Everything shines beautifully in even rows. Things come and go, so I sit, rub my hands and watch.</p>
       </article>
     </main>
     <div id="render"></div>
@@ -40,6 +74,135 @@
 if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 const which = 'beetle';
+
+function save(blob, filename) {
+  var link = document.createElement('a');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  link.parentNode.removeChild(link);
+}
+
+function saveString(text, filename) {
+  console.debug('saveString: ' + filename);
+  save(new Blob([text], { type: 'text/plain' }), filename);
+}
+
+function saveArrayBuffer(buffer, filename) {
+  console.debug('saveArrayBuffer: ' + filename);
+  save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
+}
+
+function copyObjectforExport() {
+  var materials = {
+    "bobcat": new THREE.MeshPhongMaterial({
+      color: 0xe2240f,
+      combine: THREE.MixOperation,
+      reflectivity: 0.5,
+      transparent: true,
+      opacity: 0.8,
+      emissiveIntensity: 0.5,
+      map: skin,
+    }),
+    "skull": new THREE.MeshStandardMaterial({
+      color: 0xb87333,
+      roughness: 0.70,
+      metalness: 0.80,
+      wireframe: true,
+      emissiveIntensity: 0.4,
+    }),
+    "maus": new THREE.MeshLambertMaterial({
+      color: 0x3ec4a2,
+      emissiveIntensity: 0.5,
+      reflectivity: 0.3,
+      map: malachite,
+    }),
+    "beetle": new THREE.MeshStandardMaterial({
+      color: 0xaaaaaa,
+      // reflectivity: 0.8,
+      metalness: 0.3,
+      roughness: 0.9,
+      emissiveIntensity: 0.5,
+      map: coal,
+    }),
+    "rat": new THREE.MeshStandardMaterial({
+      color: 0x99eeff,
+      metalness: 0.8,
+      roughness: 0.2,
+      emissiveIntensity: 0.5,
+    })
+  };
+
+  objectToExport = scene.children[0];
+
+  if (objectToExport != null) {
+    var copy = objectToExport.clone();
+    copy.material = materials[copy.name];
+    return copy;
+  } else {
+    console.error('exporter object is null');
+    return null;
+  }
+}
+
+var exporter = {
+  options: function () {
+    var options = {
+      binary: document.getElementById('option-binary').checked,
+      embedImages: true,
+      forcePowerOfTwoTextures: true
+    };
+
+    return options;
+  },
+  GLTF: function () {
+    console.debug('exporting gltf');
+    var e = new THREE.GLTFExporter();
+    e.parse(copyObjectforExport(), function (result) {
+      if (result instanceof ArrayBuffer) {
+        saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.glb');
+      } else {
+        var output = JSON.stringify(result, null, 2);
+        saveString(output, window.location.pathname.split('/')[1] + '.gltf');
+      }
+    }, exporter.options());
+  },
+  OBJ: function () {
+    console.debug('exporting obj');
+    var e = new THREE.OBJExporter();
+    var result = e.parse(copyObjectforExport());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.obj');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.obj');
+    }
+  },
+  STL: function () {
+    console.debug('exporting stl');
+    var e = new THREE.STLExporter();
+    var result = e.parse(copyObjectforExport(),
+      exporter.options());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.stl');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.stl');
+    }
+  }
+};
+
+function registerExporters() {
+  document.getElementById('save-gltf').addEventListener('click', function () {
+    exporter.GLTF();
+  });
+  document.getElementById('save-obj').addEventListener('click', function () {
+    exporter.OBJ();
+  });
+  document.getElementById('save-stl').addEventListener('click', function () {
+    exporter.STL();
+  });
+}
 
 var container;
 var scene;
@@ -59,22 +222,15 @@ var objects = {
   ],
   links: {
     "bobcat": '/bobcat/',
-    "skull": '/skull/',
-    "maus": '/maus/',
+    "skull": '/seagull/',
+    "maus": '/rat/',
     "beetle": '/beetle/',
-    "rat": '/rat/'
+    "rat": '/mouse/'
   },
   materials: {
     "bobcat": null, "skull": null, "maus": null, "beetle": null, "rat": null
   }
 }
-
-var skybox = {
-  loader: new THREE.CubeTextureLoader(manager),
-  texture: null, shader: null, material: null, object: null,
-  scale: objects.scalingFactor * 10,
-  addToScene: true
-};
 
 var manager = new THREE.LoadingManager();
 manager.onProgress = function (item, loaded, total) {
@@ -82,8 +238,21 @@ manager.onProgress = function (item, loaded, total) {
 };
 manager.onLoad = function () {
   console.debug("LoadingManager: 100% loaded, starting animate()");
+  registerExporters();
   animate();
 }
+
+var coal = new THREE.TextureLoader(manager).load('/assets/images/coal.jpg');
+coal.wrapS = THREE.RepeatWrapping;
+coal.wrapT = THREE.RepeatWrapping;
+
+var skin = new THREE.TextureLoader(manager).load('/assets/images/skin.png');
+skin.wrapS = THREE.RepeatWrapping;
+skin.wrapT = THREE.RepeatWrapping;
+
+var malachite = new THREE.TextureLoader(manager).load('/assets/images/malachite.jpg');
+malachite.wrapS = THREE.RepeatWrapping;
+malachite.wrapT = THREE.RepeatWrapping;
 
 init();
 

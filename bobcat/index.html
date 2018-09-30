@@ -8,7 +8,7 @@
     <meta name="author" content="Idle Institute">
     <meta name="copyright" content="© Idle Institute 2018">
     <meta name="keywords" content="">
-    <meta name="description" content="The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac and Eliot Allison. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story…">
+    <meta name="description" content="The Idle Institute's Sink Residency | The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac, Eliot Allison and Bruno Klopott. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story…">
     <link rel="canonical" href="" />
     <title>Old Tom | Idle Institute's Sink Residency</title>
     <link rel="stylesheet" href="/assets/css/normalize.css">
@@ -18,6 +18,9 @@
     <script type="text/javascript" src="/assets/js/three/Detector.js"></script>
     <script type="text/javascript" src="/assets/js/three/controls/OrbitControls.js"></script>
     <script type="text/javascript" src="/assets/js/three/loaders/GLTFLoader.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/GLTFExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/OBJExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/STLExporter.js"></script>
   </head>
   <body>
     <main>
@@ -27,11 +30,24 @@
           <h1>Old Tom</h1>
           <div class="cols">
             <div class="col"><p class="author"><a href="/">← Go back</a></p></div>
-            <div class="col"><p class="author">|</p></div>
             <div class="col"><p class="author"><a href="/">Idle Institute</a></p></div>
+            <div class="col"><p class="author"><a href="sink.sexy">Sink</a></p></div>
           </div>
-          <hr>
+          <div id="downloads" class="cols">
+            <div class="col">
+              <p class="author">Download the model:</p>
+            </div>
+            <div class="col">
+              <p class="author" style="text-align: right;">
+                <button id="save-gltf">glTF&trade;</button>
+                <button id="save-obj">OBJ</button>
+                <button id="save-stl">STL</button>
+                <label>Binary? <input id="option-binary" name="binary" type="checkbox"/></label>
+              </p>
+            </div>
+          </div>
         </header>
+        <hr>
         <p>Old-Tom was a maker. A stern figure, cut-out by the habits of the post-war north, he went to work each day with his shoelaces tied in single knots—he had a stubborn confidence that he knew how to tie the best bootlace. His morning consisted of tasks beginning with ‘a’: a shave, a poo, a gurgle of Sandersons, a kiss, a bowl of something or other. These tasks accrued to shape his time of which he stuck to to utmost dedication, admittedly to the irritation of those close to him. Attired in blue, brown and a grey sweater beneath, he’d walk to the factory on Binns road with a set of chisels, a small tin of tobacco, Trebor extra strong mints, an austere packed lunch and denture cleaning solution—he had his teeth removed in his 20s, as most men did, forever shaping the destiny of his tea-browned gnashers. He’d smile at Hilde on the desk, who had just joined the company as they were expanding to the European market, staffing the desks with new employees addressed with definitive articles: 'the french', 'the belgians', the nice Italian lass' etc. Tom wasn’t much impressed with the tattle of the other workers, nor their compulsive infatuation with potential European romances; not to say he didn’t value the people of the mainland, their industriousness and expertise: he just didn’t like sex that much. </p>
         <p>Hilde, however, always had a soft-spot for old-Tom.  ‘What must it be like’ she’d think,  ‘He moves with the rhythm of the very machines he so meticulously fixes.’</p>
         <p>Some days she’d set out to find Greg on lunch hour and muse over a blowjob in the stock cupboard. She’d never intended to carry on having sex with Greg but it seemed to suit him, and she didn’t mind. Though her eyes used to burn at the backs, as the aimless lack of concentration would often end with her eyes fixed on the shelf marked ‘M6 tapping set’. Afterwards, as way of a thank you, Greg would allow Hilde to talk about Tom and project her work fetish onto the fast fading memory of what just happened. She’d hold Greg’s limp penis and examine and comment on where Tom would have shaven, because it would seem he cared about these things. Greg’s stomach would tighten and he would resolve never to return, as he didn’t exactly love Hilde but his carefully constructed demeanour of an experienced bachelor was beginning to break, and well, he wouldn’t mind getting married. It would after all make a lot of people happy. </p>
@@ -124,6 +140,135 @@ if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 const which = 'bobcat';
 
+function save(blob, filename) {
+  var link = document.createElement('a');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  link.parentNode.removeChild(link);
+}
+
+function saveString(text, filename) {
+  console.debug('saveString: ' + filename);
+  save(new Blob([text], { type: 'text/plain' }), filename);
+}
+
+function saveArrayBuffer(buffer, filename) {
+  console.debug('saveArrayBuffer: ' + filename);
+  save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
+}
+
+function copyObjectforExport() {
+  var materials = {
+    "bobcat": new THREE.MeshPhongMaterial({
+      color: 0xe2240f,
+      combine: THREE.MixOperation,
+      reflectivity: 0.5,
+      transparent: true,
+      opacity: 0.8,
+      emissiveIntensity: 0.5,
+      map: skin,
+    }),
+    "skull": new THREE.MeshStandardMaterial({
+      color: 0xb87333,
+      roughness: 0.70,
+      metalness: 0.80,
+      wireframe: true,
+      emissiveIntensity: 0.4,
+    }),
+    "maus": new THREE.MeshLambertMaterial({
+      color: 0x3ec4a2,
+      emissiveIntensity: 0.5,
+      reflectivity: 0.3,
+      map: malachite,
+    }),
+    "beetle": new THREE.MeshStandardMaterial({
+      color: 0xaaaaaa,
+      // reflectivity: 0.8,
+      metalness: 0.3,
+      roughness: 0.9,
+      emissiveIntensity: 0.5,
+      map: coal,
+    }),
+    "rat": new THREE.MeshStandardMaterial({
+      color: 0x99eeff,
+      metalness: 0.8,
+      roughness: 0.2,
+      emissiveIntensity: 0.5,
+    })
+  };
+
+  objectToExport = scene.children[0];
+
+  if (objectToExport != null) {
+    var copy = objectToExport.clone();
+    copy.material = materials[copy.name];
+    return copy;
+  } else {
+    console.error('exporter object is null');
+    return null;
+  }
+}
+
+var exporter = {
+  options: function () {
+    var options = {
+      binary: document.getElementById('option-binary').checked,
+      embedImages: true,
+      forcePowerOfTwoTextures: true
+    };
+
+    return options;
+  },
+  GLTF: function () {
+    console.debug('exporting gltf');
+    var e = new THREE.GLTFExporter();
+    e.parse(copyObjectforExport(), function (result) {
+      if (result instanceof ArrayBuffer) {
+        saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.glb');
+      } else {
+        var output = JSON.stringify(result, null, 2);
+        saveString(output, window.location.pathname.split('/')[1] + '.gltf');
+      }
+    }, exporter.options());
+  },
+  OBJ: function () {
+    console.debug('exporting obj');
+    var e = new THREE.OBJExporter();
+    var result = e.parse(copyObjectforExport());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.obj');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.obj');
+    }
+  },
+  STL: function () {
+    console.debug('exporting stl');
+    var e = new THREE.STLExporter();
+    var result = e.parse(copyObjectforExport(),
+      exporter.options());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.stl');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.stl');
+    }
+  }
+};
+
+function registerExporters() {
+  document.getElementById('save-gltf').addEventListener('click', function () {
+    exporter.GLTF();
+  });
+  document.getElementById('save-obj').addEventListener('click', function () {
+    exporter.OBJ();
+  });
+  document.getElementById('save-stl').addEventListener('click', function () {
+    exporter.STL();
+  });
+}
+
 var container;
 var scene;
 var camera, controls, renderer, light;
@@ -142,10 +287,10 @@ var objects = {
   ],
   links: {
     "bobcat": '/bobcat/',
-    "skull": '/skull/',
-    "maus": '/maus/',
+    "skull": '/seagull/',
+    "maus": '/rat/',
     "beetle": '/beetle/',
-    "rat": '/rat/'
+    "rat": '/mouse/'
   },
   materials: {
     "bobcat": null, "skull": null, "maus": null, "beetle": null, "rat": null
@@ -165,8 +310,21 @@ manager.onProgress = function (item, loaded, total) {
 };
 manager.onLoad = function () {
   console.debug("LoadingManager: 100% loaded, starting animate()");
+  registerExporters();
   animate();
 }
+
+var coal = new THREE.TextureLoader(manager).load('/assets/images/coal.jpg');
+coal.wrapS = THREE.RepeatWrapping;
+coal.wrapT = THREE.RepeatWrapping;
+
+var skin = new THREE.TextureLoader(manager).load('/assets/images/skin.png');
+skin.wrapS = THREE.RepeatWrapping;
+skin.wrapT = THREE.RepeatWrapping;
+
+var malachite = new THREE.TextureLoader(manager).load('/assets/images/malachite.jpg');
+malachite.wrapS = THREE.RepeatWrapping;
+malachite.wrapT = THREE.RepeatWrapping;
 
 init();
 

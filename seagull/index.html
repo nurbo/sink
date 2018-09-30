@@ -8,7 +8,7 @@
     <meta name="author" content="Idle Institute">
     <meta name="copyright" content="© Idle Institute 2018">
     <meta name="keywords" content="">
-    <meta name="description" content="The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac and Eliot Allison. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story...">
+    <meta name="description" content="The Idle Institute's Sink Residency | The Idle Institute (est. 2017) is a storytelling lab: a collective of writers, filmmakers, sound-artists and engineers founded by Sonia Bernac, Eliot Allison and Bruno Klopott. Combining theories of the public sphere with quantum physics, they investigate the potentialities of the story – seen as virtual matter and a precise political tool. This emerges from the presumption of an unstable narrative field, in which they examine unexpected couplings and clashes between narrative particles. The Idle Institute’s projects build from narrative experiments: poetic traps in urban space, phone pranks, impersonation games and sci-fi installations. Currently developing a theory of the narratology of the public sphere, their research explores narrative entanglement, machine(s) of writing and technologies of storytelling. They cheat occasionally, but only when it makes a good story...">
     <link rel="canonical" href="" />
     <title>Bartholomew, a Seagull | Idle Institute's Sink Residency</title>
     <link rel="stylesheet" href="/assets/css/normalize.css">
@@ -18,6 +18,9 @@
     <script type="text/javascript" src="/assets/js/three/Detector.js"></script>
     <script type="text/javascript" src="/assets/js/three/controls/OrbitControls.js"></script>
     <script type="text/javascript" src="/assets/js/three/loaders/GLTFLoader.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/GLTFExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/OBJExporter.js"></script>
+    <script type="text/javascript" src="/assets/js/three/exporters/STLExporter.js"></script>
   </head>
   <body>
     <main>
@@ -27,11 +30,24 @@
           <h1>Bartholomew, a Seagull</h1>
           <div class="cols">
             <div class="col"><p class="author"><a href="/">← Go back</a></p></div>
-            <div class="col"><p class="author">|</p></div>
             <div class="col"><p class="author"><a href="/">Idle Institute</a></p></div>
+            <div class="col"><p class="author"><a href="sink.sexy">Sink</a></p></div>
           </div>
-          <hr>
+          <div id="downloads" class="cols">
+            <div class="col">
+              <p class="author">Download the model:</p>
+            </div>
+            <div class="col">
+              <p class="author" style="text-align: right;">
+                <button id="save-gltf">glTF&trade;</button>
+                <button id="save-obj">OBJ</button>
+                <button id="save-stl">STL</button>
+                <label>Binary? <input id="option-binary" name="binary" type="checkbox"/></label>
+              </p>
+            </div>
+          </div>
         </header>
+        <hr>
         <p>Bartholomew’s grandparents had been nest builders. These treacherous abodes had been the birthplace of his parents, his aunts, his uncles, his cousins. His grandparents had always taken pride in their sourcing of the best materials native to the stormy peninsula they had resided on for generations. Back then, the family would share the task of repairing the nest. The males, coming back from sea, would bring an assortment of bracken, herbaceous stems and twigs and the females would weave them into wafts and wefts that respired in the wind.</p>
         <p>The grandparent’s however, with a large family to feed and a parsimonious nature, were always on the look out for new technologies. They would keep a keen eye on the movements of the townsfolk—their numerous stone building projects and endless hunting markets—for they had a hunch that these folk, in their ignorance, would forget the simple tasks of survival.</p>
         <p>Some of the nesters would regale stories of how the townsfolk, many years ago, had in fact preyed on the nesters themselves! They had been so desperate to hunt, that the clever ones had fabricated nets on their roofs to catch them, while other unfed folk would literally jump on them in the middle of the day and try to sink their teeth into their crisp white plumage. But such stories would always end in guttural hoards of laughter, as it was said that when the folk bit into them, they would wretch and vomit, as the nesters meat was far too bitter for the townsfolk.</p>
@@ -124,6 +140,134 @@ if (!Detector.webgl) Detector.addGetWebGLMessage();
 
 const which = 'skull';
 
+function save(blob, filename) {
+  var link = document.createElement('a');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  link.parentNode.removeChild(link);
+}
+
+function saveString(text, filename) {
+  console.debug('saveString: ' + filename);
+  save(new Blob([text], { type: 'text/plain' }), filename);
+}
+
+function saveArrayBuffer(buffer, filename) {
+  console.debug('saveArrayBuffer: ' + filename);
+  save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
+}
+
+function copyObjectforExport() {
+  var materials = {
+    "bobcat": new THREE.MeshPhongMaterial({
+      color: 0xe2240f,
+      combine: THREE.MixOperation,
+      reflectivity: 0.5,
+      transparent: true,
+      opacity: 0.8,
+      emissiveIntensity: 0.5,
+      map: skin,
+    }),
+    "skull": new THREE.MeshStandardMaterial({
+      color: 0xb87333,
+      roughness: 0.70,
+      metalness: 0.80,
+      wireframe: true,
+      emissiveIntensity: 0.4,
+    }),
+    "maus": new THREE.MeshLambertMaterial({
+      color: 0x3ec4a2,
+      emissiveIntensity: 0.5,
+      reflectivity: 0.3,
+      map: malachite,
+    }),
+    "beetle": new THREE.MeshStandardMaterial({
+      color: 0xaaaaaa,
+      // reflectivity: 0.8,
+      metalness: 0.3,
+      roughness: 0.9,
+      emissiveIntensity: 0.5,
+      map: coal,
+    }),
+    "rat": new THREE.MeshStandardMaterial({
+      color: 0x99eeff,
+      metalness: 0.8,
+      roughness: 0.2,
+      emissiveIntensity: 0.5,
+    })
+  };
+
+  objectToExport = scene.children[0];
+
+  if (objectToExport != null) {
+    var copy = objectToExport.clone();
+    copy.material = materials[copy.name];
+    return copy;
+  } else {
+    console.error('exporter object is null');
+    return null;
+  }
+}
+
+var exporter = {
+  options: function () {
+    var options = {
+      binary: document.getElementById('option-binary').checked,
+      embedImages: true,
+      forcePowerOfTwoTextures: true
+    };
+
+    return options;
+  },
+  GLTF: function () {
+    console.debug('exporting gltf');
+    var e = new THREE.GLTFExporter();
+    e.parse(copyObjectforExport(), function (result) {
+      if (result instanceof ArrayBuffer) {
+        saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.glb');
+      } else {
+        var output = JSON.stringify(result, null, 2);
+        saveString(output, window.location.pathname.split('/')[1] + '.gltf');
+      }
+    }, exporter.options());
+  },
+  OBJ: function () {
+    console.debug('exporting obj');
+    var e = new THREE.OBJExporter();
+    var result = e.parse(copyObjectforExport());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.obj');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.obj');
+    }
+  },
+  STL: function () {
+    console.debug('exporting stl');
+    var e = new THREE.STLExporter();
+    var result = e.parse(copyObjectforExport(),
+      exporter.options());
+    if (result instanceof ArrayBuffer) {
+      saveArrayBuffer(result, window.location.pathname.split('/')[1] + '.stl');
+    } else {
+      saveString(result, window.location.pathname.split('/')[1] + '.stl');
+    }
+  }
+};
+
+function registerExporters() {
+  document.getElementById('save-gltf').addEventListener('click', function () {
+    exporter.GLTF();
+  });
+  document.getElementById('save-obj').addEventListener('click', function () {
+    exporter.OBJ();
+  });
+  document.getElementById('save-stl').addEventListener('click', function () {
+    exporter.STL();
+  });
+}
 var container;
 var scene;
 var camera, controls, renderer, light;
@@ -142,22 +286,15 @@ var objects = {
   ],
   links: {
     "bobcat": '/bobcat/',
-    "skull": '/skull/',
-    "maus": '/maus/',
+    "skull": '/seagull/',
+    "maus": '/rat/',
     "beetle": '/beetle/',
-    "rat": '/rat/'
+    "rat": '/mouse/'
   },
   materials: {
     "bobcat": null, "skull": null, "maus": null, "beetle": null, "rat": null
   }
 }
-
-var skybox = {
-  loader: new THREE.CubeTextureLoader(manager),
-  texture: null, shader: null, material: null, object: null,
-  scale: objects.scalingFactor * 10,
-  addToScene: true
-};
 
 var manager = new THREE.LoadingManager();
 manager.onProgress = function (item, loaded, total) {
@@ -165,8 +302,21 @@ manager.onProgress = function (item, loaded, total) {
 };
 manager.onLoad = function () {
   console.debug("LoadingManager: 100% loaded, starting animate()");
+  registerExporters();
   animate();
 }
+
+var coal = new THREE.TextureLoader(manager).load('/assets/images/coal.jpg');
+coal.wrapS = THREE.RepeatWrapping;
+coal.wrapT = THREE.RepeatWrapping;
+
+var skin = new THREE.TextureLoader(manager).load('/assets/images/skin.png');
+skin.wrapS = THREE.RepeatWrapping;
+skin.wrapT = THREE.RepeatWrapping;
+
+var malachite = new THREE.TextureLoader(manager).load('/assets/images/malachite.jpg');
+malachite.wrapS = THREE.RepeatWrapping;
+malachite.wrapT = THREE.RepeatWrapping;
 
 init();
 
